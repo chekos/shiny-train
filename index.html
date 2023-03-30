@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Minimalistic Audio Recorder</title>
+</head>
+<body>
+	<h1>Minimalistic Audio Recorder</h1>
+	<button id="recordButton">Record</button>
+	<audio id="audioPlayer"></audio>
+
+	<script>
+		let stream;
+		let mediaRecorder;
+		const chunks = [];
+
+		const recordButton = document.getElementById('recordButton');
+		const audioPlayer = document.getElementById('audioPlayer');
+
+		recordButton.addEventListener('click', () => {
+			navigator.mediaDevices.getUserMedia({ audio: true })
+			.then((stream) => {
+				stream = stream;
+				mediaRecorder = new MediaRecorder(stream);
+
+				mediaRecorder.addEventListener('dataavailable', (e) => {
+					chunks.push(e.data);
+				});
+
+				mediaRecorder.addEventListener('stop', () => {
+					const audioBlob = new Blob(chunks, { 'type' : 'audio/mp3' });
+					chunks.length = 0;
+
+					const audioURL = URL.createObjectURL(audioBlob);
+					audioPlayer.src = audioURL;
+				});
+
+				mediaRecorder.start();
+			})
+			.catch((err) => {
+				console.log('Error: ' + err);
+			});
+		});
+
+		window.addEventListener('beforeunload', () => {
+			stream.getTracks().forEach(track => track.stop());
+		});
+	</script>
+</body>
+</html>
