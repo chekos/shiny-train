@@ -5,6 +5,7 @@
 </head>
 <body>
 	<h1>Minimalistic Audio Recorder</h1>
+	<script>
 if (navigator.mediaDevices) {
   console.log("getUserMedia supported.");
 
@@ -74,6 +75,8 @@ if (navigator.mediaDevices) {
     .catch((err) => {
       console.error(`The following error occurred: ${err}`);
     });
+}
+	</script>
 }
 
 </body>
