@@ -49,12 +49,10 @@ if (navigator.mediaDevices) {
         audio.setAttribute("controls", "");
         deleteButton.textContent = "Delete";
         clipLabel.textContent = clipName;
-
         clipContainer.appendChild(audio);
         clipContainer.appendChild(clipLabel);
         clipContainer.appendChild(deleteButton);
         soundClips.appendChild(clipContainer);
-
         audio.controls = true;
         const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
         chunks = [];
@@ -78,6 +76,5 @@ if (navigator.mediaDevices) {
 }
 	</script>
 }
-
 </body>
 </html>
