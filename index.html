@@ -9,25 +9,21 @@
 	<audio id="audioPlayer"></audio>
 
 	<script>
-		let stream;
-		let mediaRecorder;
-		const chunks = [];
-
 		const recordButton = document.getElementById('recordButton');
 		const audioPlayer = document.getElementById('audioPlayer');
 
-		recordButton.addEventListener('click', () => {
-			navigator.mediaDevices.getUserMedia({ audio: true })
-			.then((stream) => {
-				stream = stream;
-				mediaRecorder = new MediaRecorder(stream);
+		async function startRecording() {
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+				const mediaRecorder = new MediaRecorder(stream);
+				const chunks = [];
 
-				mediaRecorder.addEventListener('dataavailable', (e) => {
+				mediaRecorder.addEventListener('dataavailable', e => {
 					chunks.push(e.data);
 				});
 
 				mediaRecorder.addEventListener('stop', () => {
-					const audioBlob = new Blob(chunks, { 'type' : 'audio/mp3' });
+					const audioBlob = new Blob(chunks, { 'type': 'audio/mp3' });
 					chunks.length = 0;
 
 					const audioURL = URL.createObjectURL(audioBlob);
@@ -35,15 +31,18 @@
 				});
 
 				mediaRecorder.start();
-			})
-			.catch((err) => {
-				console.log('Error: ' + err);
-			});
-		});
 
-		window.addEventListener('beforeunload', () => {
-			stream.getTracks().forEach(track => track.stop());
-		});
+				recordButton.disabled = true;
+				mediaRecorder.addEventListener('stop', () => {
+					recordButton.disabled = false;
+				});
+			} catch (error) {
+				console.log('Error: ', error);
+			}
+		}
+
+		recordButton.addEventListener('click', startRecording);
 	</script>
 </body>
 </html>
+
