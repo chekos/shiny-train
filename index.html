@@ -1,80 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Minimalistic Audio Recorder</title>
+	<title>Mobile Audio Recorder</title>
 </head>
 <body>
-	<h1>Minimalistic Audio Recorder</h1>
+	<h1>Mobile Audio Recorder</h1>
+	<button id="recordButton">Tap to Record</button>
+	<audio id="audioPlayer"></audio>
+
 	<script>
-if (navigator.mediaDevices) {
-  console.log("getUserMedia supported.");
+		const recordButton = document.getElementById('recordButton');
+		const audioPlayer = document.getElementById('audioPlayer');
+		let mediaRecorder;
+		let chunks = [];
 
-  const constraints = { audio: true };
-  let chunks = [];
+		function startRecording() {
+			navigator.mediaDevices.getUserMedia({ audio: true })
+				.then(stream => {
+					mediaRecorder = new MediaRecorder(stream);
 
-  navigator.mediaDevices
-    .getUserMedia(constraints)
-    .then((stream) => {
-      const mediaRecorder = new MediaRecorder(stream);
+					mediaRecorder.addEventListener('dataavailable', e => {
+						chunks.push(e.data);
+					});
 
-      visualize(stream);
+					mediaRecorder.addEventListener('stop', () => {
+						const audioBlob = new Blob(chunks, { 'type': 'audio/mp3' });
+						chunks.length = 0;
 
-      record.onclick = () => {
-        mediaRecorder.start();
-        console.log(mediaRecorder.state);
-        console.log("recorder started");
-        record.style.background = "red";
-        record.style.color = "black";
-      };
+						const audioURL = URL.createObjectURL(audioBlob);
+						audioPlayer.src = audioURL;
+					});
 
-      stop.onclick = () => {
-        mediaRecorder.stop();
-        console.log(mediaRecorder.state);
-        console.log("recorder stopped");
-        record.style.background = "";
-        record.style.color = "";
-      };
+					mediaRecorder.start();
 
-      mediaRecorder.onstop = (e) => {
-        console.log("data available after MediaRecorder.stop() called.");
+					recordButton.innerText = 'Recording...';
+					recordButton.disabled = true;
+				})
+				.catch(error => {
+					console.log('Error: ', error);
+				});
+		}
 
-        const clipName = prompt("Enter a name for your sound clip");
+		recordButton.addEventListener('click', startRecording);
 
-        const clipContainer = document.createElement("article");
-        const clipLabel = document.createElement("p");
-        const audio = document.createElement("audio");
-        const deleteButton = document.createElement("button");
-
-        clipContainer.classList.add("clip");
-        audio.setAttribute("controls", "");
-        deleteButton.textContent = "Delete";
-        clipLabel.textContent = clipName;
-        clipContainer.appendChild(audio);
-        clipContainer.appendChild(clipLabel);
-        clipContainer.appendChild(deleteButton);
-        soundClips.appendChild(clipContainer);
-        audio.controls = true;
-        const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
-        chunks = [];
-        const audioURL = URL.createObjectURL(blob);
-        audio.src = audioURL;
-        console.log("recorder stopped");
-
-        deleteButton.onclick = (e) => {
-          const evtTgt = e.target;
-          evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
-        };
-      };
-
-      mediaRecorder.ondataavailable = (e) => {
-        chunks.push(e.data);
-      };
-    })
-    .catch((err) => {
-      console.error(`The following error occurred: ${err}`);
-    });
-}
+		document.addEventListener('touchend', () => {
+			if (mediaRecorder && mediaRecorder.state === 'recording') {
+				mediaRecorder.stop();
+				recordButton.innerText = 'Tap to Record';
+				recordButton.disabled = false;
+			}
+		});
 	</script>
-}
 </body>
 </html>
